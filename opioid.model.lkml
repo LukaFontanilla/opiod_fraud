@@ -89,6 +89,12 @@ explore: claims {
     sql_on: ${doctor.doctor_id} = ${applied_model_results.doctor_id} ;;
   }
 
+  join: sms_alerts {
+    view_label: "Investigator"
+    relationship: many_to_many
+    sql_on: 1 = 1  ;;
+  }
+
 }
 
 ### PDT Timeframes
@@ -122,6 +128,7 @@ explore: med_usage_by_date_by_bene_365_rolling { hidden: yes }
 explore: events_pre { hidden: yes }
 explore: events_pre_aggd { hidden: yes  }
 explore: events { hidden: yes }
+explore: sms_alerts { hidden: yes }
 explore: claims_pre {
 
   hidden: yes
