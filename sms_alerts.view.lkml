@@ -11,6 +11,9 @@ view: sms_alerts {
 
   dimension: first_name {}
   dimension: last_name {}
+  dimension: name {
+    sql: concat(${first_name},' ',${last_name}) ;;
+  }
   dimension: phone_number {
     type: number
     value_format_name: id
