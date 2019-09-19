@@ -110,7 +110,7 @@ view: doctor {
     fields: [
       npi,
       name,
-      zip_code,
+      # zip_code,
       state,
       count
     ]
