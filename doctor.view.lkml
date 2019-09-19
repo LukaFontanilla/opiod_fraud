@@ -111,7 +111,7 @@ view: doctor {
       npi,
       name,
       # zip_code,
-      state,
+      # state,
       count
     ]
   }
