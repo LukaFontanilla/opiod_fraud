@@ -54,6 +54,16 @@ view: claims {
     sql: ${TABLE}.length ;;
   }
 
+  dimension: index_date {
+    type: number
+    sql: ${TABLE}.index_date ;;
+  }
+
+  dimension: days_after_index_date {
+    type: number
+    sql: datediff(day, ${index_date}, ${claim_date}) ;;
+  }
+
   dimension: supply_days {
     type: number
     sql: ${supply_months}*30 ;;
@@ -122,6 +132,37 @@ view: claims {
       field: drug.opioid_drug
       value: "Yes"
     }
+    drill_fields: [drill*]
+  }
+
+  measure: count_non_opioid_claims {
+    label: "Count Non-Opioid Claims"
+    type: count
+    filters: {
+      field: drug.opioid_drug
+      value: "No"
+    }
+    drill_fields: [drill*]
+  }
+
+  measure: rolling_total_count_claims {
+    label: "Count Total Claims (Running Total)"
+    type: running_total
+    sql: ${count_claims} ;;
+    drill_fields: [drill*]
+  }
+
+  measure: rolling_total_count_opioid_claims {
+    label: "Count Opioid Claims (Running Total)"
+    type: running_total
+    sql: ${count_opioid_claims} ;;
+    drill_fields: [drill*]
+  }
+
+  measure: rolling_total_count_non_opioid_claims {
+    label: "Count Non-Opioid Claims (Running Total)"
+    type: running_total
+    sql: ${count_non_opioid_claims} ;;
     drill_fields: [drill*]
   }
 
@@ -216,14 +257,28 @@ view: claims {
       a.*,
       round(a.bene_id*(100/200)+a.doctor_add,0) as doctor_id,
       round(a.bene_id*(50/200)+a.pharmacy_add,0) as pharmacy_id,
-      row_number() over (order by date ) as id
+      row_number() over (order by date ) as id,
+      dateadd(day,-1,c.index_date) as index_date
   FROM ${claims_raw.SQL_TABLE_NAME} a
   LEFT JOIN ${events_MED.SQL_TABLE_NAME} b
     ON a.bene_id = b.bene_id
     AND a.date <= b.event_date
     AND b.event_type = 'Death'
+  LEFT JOIN ${index_date_by_bene.SQL_TABLE_NAME} c
+    ON a.bene_id = c.bene_id
 ;;
   }
+}
+
+view: index_date_by_bene {
+  derived_table: {
+    datagroup_trigger: once_yearly
+    explore_source: claims_raw {
+      column: bene_id {}
+      column: index_date {}
+    }
+  }
+  dimension: bene_id {}
 }
 
 view: claims_raw {
@@ -240,6 +295,15 @@ view: claims_raw {
       JOIN ${zip_raw.SQL_TABLE_NAME} c
         ON b.zip_id = c.zip_id
 ;;
+  }
+  dimension: bene_id {}
+  dimension: date {
+    type: date
+  }
+  dimension: drug_id {}
+  measure: index_date {
+    type: date
+    sql: min(${date}) ;;
   }
 }
 
@@ -1888,7 +1952,7 @@ SELECT 1 as doctor_add, 96 as bene_id, 1 as pharmacy_add, 15 as drug_id, '2017-0
 SELECT 1 as doctor_add, 102 as bene_id, 1 as pharmacy_add, 10 as drug_id, '2016-09-06' as date, 4 as length UNION ALL
 SELECT 0 as doctor_add, 86 as bene_id, 1 as pharmacy_add, 12 as drug_id, '2018-06-01' as date, 3 as length UNION ALL
 SELECT 2 as doctor_add, 56 as bene_id, -2 as pharmacy_add, 12 as drug_id, '2016-07-25' as date, 4 as length UNION ALL
-SELECT 0 as doctor_add, 14 as bene_id, 0 as pharmacy_add, -3 as drug_id, '2016-09-25' as date, 3 as length UNION ALL
+SELECT 0 as doctor_add, 14 as bene_id, 0 as pharmacy_add, 1 as drug_id, '2016-09-25' as date, 3 as length UNION ALL
 SELECT 0 as doctor_add, 117 as bene_id, -1 as pharmacy_add, 9 as drug_id, '2018-11-26' as date, 1 as length UNION ALL
 SELECT 1 as doctor_add, 93 as bene_id, 1 as pharmacy_add, 6 as drug_id, '2016-10-08' as date, 4 as length UNION ALL
 SELECT 1 as doctor_add, 171 as bene_id, 1 as pharmacy_add, 13 as drug_id, '2018-12-29' as date, 2 as length UNION ALL
@@ -2259,7 +2323,7 @@ SELECT 0 as doctor_add, 114 as bene_id, -1 as pharmacy_add, 19 as drug_id, '2016
 SELECT 0 as doctor_add, 38 as bene_id, 1 as pharmacy_add, 10 as drug_id, '2016-12-06' as date, 1 as length UNION ALL
 SELECT 0 as doctor_add, 144 as bene_id, 0 as pharmacy_add, 10 as drug_id, '2017-12-06' as date, 5 as length UNION ALL
 SELECT 1 as doctor_add, 115 as bene_id, 0 as pharmacy_add, 17 as drug_id, '2018-06-27' as date, 2 as length UNION ALL
-SELECT 0 as doctor_add, 63 as bene_id, 0 as pharmacy_add, 21 as drug_id, '2017-09-04' as date, 2 as length UNION ALL
+SELECT 0 as doctor_add, 63 as bene_id, 0 as pharmacy_add, 20 as drug_id, '2017-09-04' as date, 2 as length UNION ALL
 SELECT 1 as doctor_add, 49 as bene_id, 0 as pharmacy_add, 10 as drug_id, '2018-10-11' as date, 1 as length UNION ALL
 SELECT 1 as doctor_add, 59 as bene_id, 1 as pharmacy_add, 6 as drug_id, '2018-01-29' as date, 1 as length UNION ALL
 SELECT 0 as doctor_add, 109 as bene_id, 0 as pharmacy_add, 13 as drug_id, '2018-05-24' as date, 2 as length UNION ALL
@@ -2293,7 +2357,7 @@ SELECT -1 as doctor_add, 77 as bene_id, 0 as pharmacy_add, 14 as drug_id, '2018-
 SELECT 0 as doctor_add, 133 as bene_id, 0 as pharmacy_add, 13 as drug_id, '2018-07-19' as date, 1 as length UNION ALL
 SELECT 0 as doctor_add, 95 as bene_id, -1 as pharmacy_add, 3 as drug_id, '2018-04-26' as date, 2 as length UNION ALL
 SELECT -1 as doctor_add, 60 as bene_id, 1 as pharmacy_add, 21 as drug_id, '2017-03-24' as date, 10 as length UNION ALL
-SELECT 1 as doctor_add, 111 as bene_id, -1 as pharmacy_add, 2 as drug_id, '2016-09-03' as date, 3 as length UNION ALL
+SELECT 1 as doctor_add, 111 as bene_id, -1 as pharmacy_add, 20 as drug_id, '2016-09-03' as date, 3 as length UNION ALL
 SELECT 1 as doctor_add, 109 as bene_id, 0 as pharmacy_add, 14 as drug_id, '2017-11-21' as date, 9 as length UNION ALL
 SELECT 0 as doctor_add, 111 as bene_id, -1 as pharmacy_add, 6 as drug_id, '2018-01-01' as date, 1 as length UNION ALL
 SELECT -1 as doctor_add, 124 as bene_id, 1 as pharmacy_add, 8 as drug_id, '2017-10-26' as date, 3 as length UNION ALL

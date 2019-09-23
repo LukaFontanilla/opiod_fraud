@@ -351,11 +351,11 @@ view: beneficiary {
       d.count_distinct_opioid_providers,
       d.count_events
     FROM ${beneficiary_raw.SQL_TABLE_NAME} a
-    JOIN ${zip_raw.SQL_TABLE_NAME} b
+    LEFT JOIN ${zip_raw.SQL_TABLE_NAME} b
       ON a.zip_id = b.zip_id
-    JOIN ${max_rolling_MED_by_bene.SQL_TABLE_NAME} c
+    LEFT JOIN ${max_rolling_MED_by_bene.SQL_TABLE_NAME} c
       ON a.bene_id = c.bene_id
-    JOIN ${summary_facts_by_bene.SQL_TABLE_NAME} d
+    LEFT JOIN ${summary_facts_by_bene.SQL_TABLE_NAME} d
       ON a.bene_id = d.bene_id
 
 ;;

@@ -37,6 +37,12 @@ explore: claims {
     sql_on: ${claims.pharmacy_id} = ${pharmacy.pharmacy_id} ;;
   }
 
+  join: drug_order_by_bene_typed {
+    view_label: "Therapy Order"
+    relationship: many_to_one
+    sql_on: ${claims.bene_id} = ${drug_order_by_bene_typed.bene_id} ;;
+  }
+
   join: drug {
     view_label: "Claims"
     relationship: many_to_one
@@ -162,4 +168,7 @@ explore: claims_pre {
     relationship: many_to_one
     sql_on: ${claims_pre.drug_id} = ${drug.drug_id} ;;
   }
+}
+explore: claims_raw {
+  hidden: yes
 }
