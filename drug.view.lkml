@@ -10,6 +10,11 @@ view: drug_raw {
   }
 
   dimension: drug_name {
+    link: {
+      label: "Drug Therapy Deep Dive"
+      url: "https://demoexpo.looker.com/dashboards/173"
+      icon_url: "https://looker.com/favicon.ico"
+    }
   }
 
   dimension: opioid_drug {
