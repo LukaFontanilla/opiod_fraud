@@ -2,9 +2,11 @@ view: risk_score_input {
   derived_table: {
     explore_source: risk_score {
       column: start_date {}
-      column: humidity { field: daily_weather.humidity }
-      column: temperature { field: daily_weather.temperature }
-      column: trip_count {}
+      column: number_comordities {}
+      column: number_conditions {}
+      column: median_income {}
+      column: hh_on_snap {}
+      column: risk_score {}
     }
   }
 }
