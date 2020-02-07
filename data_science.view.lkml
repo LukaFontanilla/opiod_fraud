@@ -1,3 +1,130 @@
+view: risk_score_input {
+  derived_table: {
+    explore_source: risk_score {
+      column: start_date {}
+      column: humidity { field: daily_weather.humidity }
+      column: temperature { field: daily_weather.temperature }
+      column: trip_count {}
+    }
+  }
+}
+
+view: risk_score_regression {
+  derived_table: {
+    datagroup_trigger: sweet_datagroup
+    sql_create:
+      CREATE OR REPLACE MODEL ${SQL_TABLE_NAME}
+      OPTIONS(model_type='linear_reg'
+        , labels=['risk_score']
+        , min_rel_progress = 0.05
+        , max_iteration = 50
+        ) AS
+      SELECT
+         * EXCEPT(start_date)
+      FROM risk_score_inputs ;;
+  }
+}
+
+######################## TRAINING INFORMATION #############################
+
+view: risk_score_regression_evaluation {
+  derived_table: {
+    sql: SELECT * FROM ml.EVALUATE(
+          MODEL risk_score_regression,
+          (SELECT * FROM risk_score_input)) ;;
+  }
+  dimension: mean_absolute_error {type: number}
+  dimension: mean_squared_error {type: number}
+  dimension: mean_squared_log_error {type: number}
+  dimension: median_absolute_error {type: number}
+  dimension: r2_score {type: number}
+  dimension: explained_variance {type: number}
+}
+
+view: risk_score_training {
+  derived_table: {
+    sql: SELECT  * FROM ml.TRAINING_INFO(MODEL risk_score_regression);;
+  }
+  dimension: training_run {type: number}
+  dimension: iteration {type: number}
+  dimension: loss {type: number}
+  dimension: eval_loss {type: number}
+  dimension: duration_ms {label:"Duration (ms)" type: number}
+  dimension: learning_rate {type: number}
+  measure: iterations {type:count}
+  measure: total_loss {
+    type: sum
+    sql: ${loss} ;;
+  }
+  measure: total_training_time {
+    type: sum
+    label:"Total Training Time (sec)"
+    sql: ${duration_ms}/1000 ;;
+    value_format_name: decimal_1
+  }
+  measure: average_iteration_time {
+    type: average
+    label:"Average Iteration Time (sec)"
+    sql: ${duration_ms}/1000 ;;
+    value_format_name: decimal_1
+  }
+  set: detail {fields: [training_run,iteration,loss,eval_loss,duration_ms,learning_rate]}
+}
+
+
+################################ TRUE OUTPUTS ############################
+view: risk_score_prediction {
+  derived_table: {
+    sql: SELECT * FROM ml.PREDICT(
+          MODEL risk_score_regression,
+          (SELECT * FROM risk_score_input));;
+  }
+
+  dimension: predicted_risk_score {
+    type: number
+  }
+
+  dimension: residual {
+    type:  number
+    sql: ${expected_risk_score} - ${risk_score}  ;;
+  }
+  dimension: residual_percent {
+    type:  number
+    value_format_name: percent_1
+    sql: 1.0 * ${residual}/NULLIF(${risk_score},0)  ;;
+  }
+
+  dimension: start_date {
+    type: date
+    primary_key: yes
+  }
+
+  dimension: number_comorbidites {
+    type: number
+  }
+
+  dimension: number_conditions {
+    type: number
+  }
+  dimension: risk_score {
+    type: number
+  }
+  measure: expected_risk_score {
+    type: max
+    sql: ${predicted_risk_score} ;;
+  }
+  measure: overall_residual {
+    type: max
+    sql: ${residual} ;;
+  }
+  measure: overall_residual_percent {
+    type: max
+    value_format_name: percent_1
+    sql: ${residual_percent} ;;
+  }
+}
+
+
 
 view: applied_model_results {
 
