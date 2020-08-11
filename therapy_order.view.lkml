@@ -2,6 +2,7 @@
 
 view: drug_order_by_bene_typed {
   derived_table: {
+    publish_as_db_view: yes
     datagroup_trigger: once_yearly
     sql:
       SELECT
