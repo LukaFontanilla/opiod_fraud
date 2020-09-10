@@ -44,7 +44,7 @@ view: pharmacy {
     drill_fields: [beneficiary.name]
     link: {
       label: "Pharmacy Deep Dive - {{ value }}"
-      url: "/dashboards/10?Pharmacy={{ value }}"
+      url: "/dashboards/731?Pharmacy={{ value }}"
       icon_url: "http://www.google.com/s2/favicons?domain=looker.com"
     }
     action: {

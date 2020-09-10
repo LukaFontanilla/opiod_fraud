@@ -73,7 +73,7 @@ view: beneficiary {
     drill_fields: [provider.name]
     link: {
       label: "Beneficiary Deep Dive - {{ value }}"
-      url: "/dashboards/9?Beneficiary={{ value }}"
+      url: "/dashboards/730?Beneficiary={{ value }}"
       icon_url: "http://www.google.com/s2/favicons?domain=looker.com"
     }
     action: {
