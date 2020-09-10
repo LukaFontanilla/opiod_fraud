@@ -2,7 +2,7 @@ connection: "snow_demo_db"
 
 label: "Opioid Fraud"
 
-include: "*.view.lkml"                       # include all views in this project
+include: "/old/*.view.lkml"                       # include all views in this project
 # include: "*.dashboard.lookml"   # include a LookML dashboard called my_dashboard
 
 persist_with: once_yearly
