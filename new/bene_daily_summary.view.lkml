@@ -50,7 +50,7 @@ view: bene_daily_summary {
     convert_tz: no
     datatype: date
     sql: ${TABLE}.observation_date ;;
-    drill_fields: [beneficiary.name, provider.name]
+    drill_fields: [observation_month, observation_week, beneficiary.name, provider.name]
   }
 
   dimension: rolling_med_365 {
