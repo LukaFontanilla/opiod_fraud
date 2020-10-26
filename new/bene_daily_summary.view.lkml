@@ -181,6 +181,11 @@ view: bene_daily_summary {
       url: "/dashboards/11"
       icon_url: "http://www.google.com/s2/favicons?domain=looker.com"
     }
+    link: {
+      label: "Dive into definition in Collibra"
+      url: "www.collibra.com"
+      icon_url: "http://www.google.com/s2/favicons?domain=collibra.com"
+    }
     drill_fields: [risk_drill*]
   }
 
