@@ -1,6 +1,6 @@
 view: bene_daily_summary {
-  sql_table_name: `lookerdata.looker_scratch.XH_demo_datasets_by_bene_by_patient_summary`
-    ;;
+  sql_table_name: ${by_bene_by_patient_summary.SQL_TABLE_NAME} ;;
+  # sql_table_name: `lookerdata.looker_scratch.XH_demo_datasets_by_bene_by_patient_summary` ;;
 
 #############
 ### Original Dimensions
