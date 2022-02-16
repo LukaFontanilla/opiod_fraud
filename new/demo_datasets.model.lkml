@@ -1,8 +1,7 @@
 connection: "lookerdata"
 
 include: "/new/*.view.lkml"
-include: "/new/*.dashboard"
-
+include: "/dashboards/*.dashboard"
 ## Opioid Fraud
 
 explore: bene_daily_summary {
